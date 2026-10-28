@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carreras y notas de corte</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Overpass:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#005f5f;--teal2:#0b7373;--bg:#f0e8d0;--card:#f8f2e0;--ink:#003f3f;--accent:#e39a3b;--line:#b9c9bd;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a2e2e;--card:#103d3d;--ink:#f0e8d0;--line:#2c5c5c}}
+:root[data-theme="dark"]{--bg:#0a2e2e;--card:#103d3d;--ink:#f0e8d0;--line:#2c5c5c}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Overpass,system-ui,sans-serif;line-height:1.5}
+.hero{background:var(--teal);color:#f0e8d0;text-align:center;padding:40px 16px 8px}
+.hero small{font-weight:800;letter-spacing:.18em;font-size:clamp(12px,2.4vw,18px)}
+.hero svg{display:block;margin:0 auto;max-width:760px;width:100%;height:auto}
+.search{max-width:720px;margin:0 auto;transform:translateY(50%);display:flex;gap:8px;background:var(--card);padding:10px;border-radius:999px;box-shadow:0 6px 0 var(--accent)}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:18px;padding:8px 16px;color:var(--ink);outline:none}
+.search button,.btn{background:var(--teal);color:#f0e8d0;border:0;border-radius:999px;font:inherit;font-weight:800;padding:10px 22px;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{max-width:1000px;margin:0 auto;padding:64px 16px 32px}
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;border-bottom:2px dotted var(--teal2);padding-bottom:18px}
+.filters label{display:flex;flex-direction:column;font-weight:800;font-size:14px;gap:4px}
+select{font:inherit;padding:8px 12px;border:2px solid var(--teal);border-radius:8px;background:var(--card);color:var(--ink)}
+input[type=range]{accent-color:var(--teal2);width:200px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.chip{border:2px solid var(--teal);background:transparent;color:var(--ink);font:inherit;font-weight:600;padding:4px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--teal);color:#f0e8d0}
+.count{display:flex;justify-content:space-between;align-items:center;margin:8px 0 16px;font-weight:600}
+h2{font-family:"Alfa Slab One",serif;font-weight:400;font-size:28px;margin:0;color:var(--teal)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) h2{color:var(--accent)}}
+:root[data-theme="dark"] h2{color:var(--accent)}
+.list{display:grid;gap:12px;padding:0;margin:0;list-style:none}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--card);border:2px solid var(--teal);border-radius:14px;padding:14px 18px}
+.row h3{margin:0;font-size:20px}
+.meta{font-size:14px;opacity:.85}
+.nota{font-family:"Alfa Slab One",serif;font-size:34px;color:var(--accent);text-align:right;line-height:1}
+.nota.sn{font-family:Overpass,system-ui,sans-serif;font-weight:800;font-size:15px;color:var(--ink);opacity:.75;max-width:110px}
+.nota span{display:block;font:600 11px Overpass,sans-serif;color:var(--ink);opacity:.7}
+.bar{grid-column:1/-1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--teal2)}
+.empty{padding:32px;text-align:center;border:2px dotted var(--teal2);border-radius:14px}
+.tip{margin-top:32px;font-size:14px;opacity:.8}
+footer{background:var(--teal);color:#f0e8d0;padding:32px 16px}
+.foot{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}
+.foot b{font-family:"Alfa Slab One",serif;font-weight:400;font-size:22px}
+.foot p{margin:4px 0}
+.theme{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;background:transparent;border:2px solid #f0e8d0;color:#f0e8d0;border-radius:999px;font:inherit;padding:2px 12px;cursor:pointer}
+.hero{position:relative}
+.acts{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.acts .chip{padding:2px 12px;font-size:14px}
+dialog{border:3px solid var(--teal);border-radius:18px;background:var(--bg);color:var(--ink);max-width:560px;width:calc(100% - 32px);padding:24px;box-shadow:0 8px 0 var(--accent)}
+dialog::backdrop{background:rgba(0,40,40,.6)}
+dialog h3{font-family:"Alfa Slab One",serif;font-weight:400;font-size:26px;margin:0 0 4px;color:var(--teal)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) dialog h3{color:var(--accent)}}
+:root[data-theme="dark"] dialog h3{color:var(--accent)}
+.hist{width:100%;height:auto;margin:12px 0}
+.hist text{fill:var(--ink);font-family:Overpass,sans-serif;font-size:13px}
+.contact{background:var(--card);border-top:2px dotted var(--teal2);padding:40px 16px}
+.contact .in{max-width:640px;margin:0 auto}
+.contact form{display:grid;gap:14px;margin-top:16px}
+.contact label{display:flex;flex-direction:column;font-weight:800;font-size:14px;gap:4px}
+.contact input,.contact textarea{font:inherit;padding:10px 12px;border:2px solid var(--teal);border-radius:8px;background:var(--bg);color:var(--ink)}
+.ok{padding:14px;border:2px solid var(--teal2);border-radius:10px;font-weight:600}
+.filters label.chk{flex-direction:row;align-items:center;gap:8px;font-weight:600;font-size:14px;max-width:230px;cursor:pointer}
+.chk input{accent-color:var(--teal2);width:18px;height:18px;flex:none}
+.flag{width:56px;height:42px;flex:none}
+#ccaa{appearance:none;-webkit-appearance:none;background-image:none;color:var(--ink);opacity:1}
+.ok[hidden]{display:none}
+.cov{max-width:1000px;margin:0 auto;padding:8px 16px 40px}
+.cov summary{cursor:pointer;font-weight:800;padding:6px 0}
+.cov ul{margin:0 0 8px;padding-left:22px}
+.cov details{border-bottom:2px dotted var(--line)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <button class="theme" id="theme" type="button">Modo oscuro</button>
+  <small>BUSCADOR DE CARRERAS EN UNIVERSIDADES</small>
+  <svg viewBox="0 0 760 300" role="img" aria-label="Carreras y notas de corte">
+    <g fill="none" stroke="#f0e8d0" stroke-width="22" stroke-linecap="square">
+      <path d="M350 130V70a30 30 0 0 1 60 0v40"/><path d="M410 110v40a30 30 0 0 0 60 0V90"/>
+    </g>
+    <text x="250" y="105" fill="#f0e8d0" font-family="Overpass" font-weight="800" font-size="18" letter-spacing="2" text-anchor="end">EST.</text>
+    <text x="510" y="105" fill="#f0e8d0" font-family="Overpass" font-weight="800" font-size="18" letter-spacing="2">2026</text>
+    <path id="arc" d="M30 215Q380 330 730 215" fill="none"/>
+    <text font-family="Alfa Slab One" font-size="54" fill="#f0e8d0"><textPath href="#arc" startOffset="50%" text-anchor="middle">carreras y notas de corte</textPath></text>
+  </svg>
+  <form class="search" role="search" onsubmit="return false">
+    <input id="q" type="search" placeholder="Busca una carrera" aria-label="Buscar una carrera">
+    <button type="button" class="btn" id="go">Buscar</button>
+  </form>
+</header>
+
+<main>
+  <div class="filters">
+    <img class="flag" src="data:image/jpeg;base64,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" alt="Bandera de la Comunidad de Madrid">
+    <label>Comunidad
+      <select id="ccaa" disabled aria-label="Comunidad"><option value="Madrid">Madrid</option></select>
+    </label>
+    <label>Universidad
+      <select id="uni"><option value="">Todas</option></select>
+    </label>
+    <label>Nota mínima: <output id="minv">5,0</output>
+      <input id="min" type="range" min="5" max="14" step="0.5" value="5">
+    </label>
+    <label>Ordenar por
+      <select id="sort"><option value="desc">Nota más alta</option><option value="asc">Nota más baja</option><option value="az">Nombre (A–Z)</option></select>
+    </label>
+    <label class="chk"><input type="checkbox" id="sn"> Mostrar también las que no tienen nota de corte</label>
+    <button class="btn" type="button" id="reset">Borrar filtros</button>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="Rama de conocimiento"></div>
+  <div class="count"><h2>Resultados</h2><span id="n"></span></div>
+  <ul class="list" id="list"></ul>
+  <p class="tip">Notas de corte del curso 2025-26 para acceso con PAU o FP (Grupo 1), según la publicación oficial de la Comunidad de Madrid. Universidades públicas de la Comunidad de Madrid. Las titulaciones marcadas «Sin nota de corte» tienen 5,000 en el PDF, es decir, no hubo nota de corte. PARS = Programa Académico con Recorrido Sucesivo.</p>
+</main>
+
+<dialog id="dlg" aria-labelledby="dt">
+  <h3 id="dt"></h3>
+  <div class="meta" id="dm"></div>
+  <svg class="hist" id="dh" viewBox="0 0 400 170" role="img" aria-label="Histórico de notas de corte"></svg>
+  <p id="dp"></p>
+  <button class="btn" type="button" id="dc">Cerrar ficha</button>
+</dialog>
+
+<footer>
+  <div class="foot">
+    <div>
+      <b>Carreras y notas de corte</b>
+      <p>IES Gerardo Diego</p>
+    </div>
+    <svg width="130" height="130" viewBox="0 0 130 130" role="img" aria-label="Servicio 100% garantizado">
+      <defs><path id="c" d="M65 65m-48 0a48 48 0 1 1 96 0a48 48 0 1 1-96 0"/></defs>
+      <text font-family="Overpass" font-weight="800" font-size="14" letter-spacing="3" fill="#e39a3b"><textPath href="#c">SERVICIO 100% GARANTIZADO</textPath></text>
+    </svg>
+  </div>
+</footer>
+
+<script>
+const RM={AH:"Artes y Humanidades",C:"Ciencias",S:"Ciencias de la Salud",I:"Ingeniería y Arquitectura",CS:"Ciencias Sociales y Jurídicas",D:"Dobles grados",J:"Grados conjuntos e interuniversitarios"};
+const P=(u,t)=>{let r;return t.trim().split("\n").flatMap(l=>{if(l[0]=="#"){r=RM[l.slice(1)];return[]}const a=l.split("|");return[[a[0],u,"Madrid",r,+a[1].replace(",","."),"",a[2],a[3]]]})};
+const UAH=`#AH
+Estudios Hispánicos|5,000|240|4
+Estudios Ingleses|6,864|240|4
+Historia|5,710|240|4
+Humanidades|5,000|240|4
+Lenguas Modernas y Traducción|5,659|240|4
+Lenguas Modernas y Traducción (Guadalajara)|5,000|240|4
+#C
+Biología|9,700|240|4
+Ciencias Ambientales|7,106|240|4
+Criminalística: Ciencias y Tecnologías Forenses|11,636|240|4
+Física e Instrumentación Espacial|11,830|240|4
+Química|9,864|240|4
+#S
+Biología Sanitaria|11,839|240|4
+Ciencias de la Actividad Física y del Deporte|10,325|240|4
+Enfermería|11,426|240|4
+Enfermería (Guadalajara)|11,100|240|4
+Enfermería (Torrejón de Ardoz)|11,303|240|4
+Farmacia|11,220|300|5
+Fisioterapia|10,850|240|4
+Fisioterapia (Torrejón de Ardoz)|10,550|240|4
+Medicina|12,871|360|6
+#I
+Arquitectura Técnica y Edificación (Guadalajara)|7,707|240|4
+Fundamentos de Arquitectura y Urbanismo|10,148|330|5
+Ingeniería de Computadores|8,575|240|4
+Ingeniería en Electrónica y Automática Industrial|9,976|240|4
+Ingeniería en Electrónica de Comunicaciones|7,504|240|4
+Ingeniería Informática|10,700|240|4
+Ingeniería en Sistemas de Información|8,139|240|4
+Ingeniería en Sistemas de Telecomunicación|7,800|240|4
+Ingeniería en Tecnologías Industriales|11,000|240|4
+Ingeniería en Tecnologías Industriales + Máster Universitario en Ingeniería Industrial|11,614|240|4
+Ingeniería en Tecnologías de Telecomunicación|8,003|240|4
+Ingeniería en Tecnologías de Telecomunicación + Máster Universitario en Ingeniería de Telecomunicaciones|8,553|240|4
+Ingeniería Telemática|7,575|240|4
+Matemáticas y Computación (Guadalajara)|10,064|240|4
+#CS
+Administración y Dirección de Empresas|9,225|240|4
+Administración y Dirección de Empresas (Guadalajara)|7,882|240|4
+Comunicación Audiovisual (Guadalajara)|7,890|240|4
+Finanzas|7,541|240|4
+Derecho|8,328|240|4
+Economía|7,664|240|4
+Economía y Negocios Internacionales|11,203|240|4
+Economía y Negocios Internacionales (inglés)|10,428|240|4
+Magisterio de Educación Infantil (Guadalajara)|8,253|240|4
+Magisterio de Educación Primaria (Guadalajara)|8,700|240|4
+Magisterio de Educación Primaria (bilingüe - inglés) (Guadalajara)|5,561|240|4
+Turismo (Guadalajara)|5,000|240|4
+#D
+Derecho - Administración y Dirección de Empresas|9,516|324|5
+Estudios Ingleses - Lenguas Modernas y Traducción (inglés)|9,334|318|5
+Humanidades - Magisterio de Educación Primaria|9,489|302|5
+Ingeniería Informática - Administración y Dirección de Empresas|10,436|345|5
+Ingeniería Electrónica de Comunicaciones - Ingeniería Electrónica y Automática Industrial|8,987|315|5
+Magisterio de Educación Infantil - Magisterio de Educación Primaria (Guadalajara)|9,360|298|4
+Turismo - Administración y Dirección de Empresas (Guadalajara)|5,000|324|5`;
+const UC3=`#AH
+Estudios Culturales (bilingüe) (Getafe)|5,000|240|4
+Humanidades Digitales (Getafe)|5,000|240|4
+#C
+Neurociencia (inglés) (Getafe)|13,100|240|4
+#I
+Ciencia e Ingeniería de Datos (inglés) (Leganés)|11,556|240|4
+Ingeniería Aeroespacial (inglés) (Leganés)|13,300|240|4
+Ingeniería Biomédica (inglés) (Leganés)|12,843|240|4
+Ingeniería de Comunicaciones Móviles y Espaciales (español o bilingüe) (Leganés)|10,253|240|4
+Ingeniería de la Energía (inglés) (Leganés)|11,175|240|4
+Ingeniería de Sonido e Imagen (español o bilingüe) (Leganés)|10,115|240|4
+Ingeniería Eléctrica (español o bilingüe) (Leganés)|10,967|240|4
+Ingeniería Electrónica Industrial y Automática (español o bilingüe) (Leganés)|10,636|240|4
+Ingeniería en Tecnologías de Telecomunicación (español o bilingüe) (Leganés)|10,713|240|4
+Ingeniería en Tecnologías Industriales (español o bilingüe) (Leganés)|11,966|240|4
+Ingeniería Física (inglés) (Leganés)|13,225|240|4
+Ingeniería Informática (español, bilingüe o inglés) (Leganés)|10,978|240|4
+Ingeniería Informática (Colmenarejo)|10,364|240|4
+Ingeniería de Internet (Leganés)|9,764|240|4
+Ingeniería Mecánica (español o bilingüe) (Leganés)|11,664|240|4
+Ingeniería Robótica (inglés) (Leganés)|11,489|240|4
+Inteligencia Artificial (español o inglés) (Leganés)|11,775|240|4
+Inteligencia Artificial (español o inglés) (Colmenarejo)|10,448|240|4
+Matemática Aplicada (inglés) (Leganés)|12,024|240|4
+Matemáticas y Computación (inglés) (Leganés)|12,224|240|4
+Programa Académico de Ingeniería Informática vía Grado en Ingeniería Informática (bilingüe) (Leganés y Colmenarejo)|12,825|240+90|5
+Programa Académico de Ing. de Telecomunicación vía Grado en Ing. en Tecnologías de Telecomunicación (bilingüe) (Leganés)|12,889|240+90|5
+Programa Académico de Ing. Industrial vía Grado en Ing. en Tecnologías Industriales (español o bilingüe) (Leganés)|13,414|240+90|5
+#CS
+Administración de Empresas (español o inglés) (Getafe)|11,516|240|4
+Administración de Empresas (Colmenarejo)|10,970|240|4
+Análisis de Datos para la Empresa (Getafe)|11,567|240|4
+Ciencias Políticas (español o bilingüe) (Getafe)|9,542|240|4
+Comunicación Audiovisual (español o bilingüe) (Getafe)|10,109|240|4
+Derecho (Getafe)|11,561|240|4
+Derecho (Colmenarejo)|10,665|240|4
+Economía (español o inglés) (Getafe)|11,263|240|4
+Empresa y Tecnología (inglés) (Getafe)|12,213|240|4
+Estudios Internacionales (inglés) (Getafe)|12,063|240|4
+Finanzas y Contabilidad (español o inglés) (Getafe)|11,043|240|4
+Gestión de la Información y Contenidos Digitales (Getafe)|9,836|240|4
+Historia y Política (bilingüe) (Getafe)|8,314|240|4
+Periodismo (español o bilingüe) (Getafe)|8,903|240|4
+Relaciones Laborales y Empleo (Getafe)|7,503|240|4
+Sociología (español o bilingüe) (Getafe)|7,294|240|4
+Sostenibilidad Urbana (Urban Sustainability Studies) (Grado de la Alianza Europea YUFE) (inglés) (Getafe)|9,920|180|3
+Turismo (Getafe)|6,836|240|4
+#D
+Ciencias Políticas - Sociología (Getafe)|9,041|306|5
+Ciencia e Ingeniería de Datos - Ingeniería en Tecnologías de Telecomunicación (bilingüe) (Leganés)|12,124|372|5,5
+Derecho - Administración de Empresas (español o bilingüe) (Getafe)|12,600|360|6
+Derecho - Administración de Empresas (Colmenarejo)|11,250|360|6
+Derecho - Ciencias Políticas (Getafe)|11,178|345|6
+Derecho - Economía (español o bilingüe) (Getafe)|12,239|360|6
+Estudios Internacionales - Administración de Empresas (inglés) (Getafe)|13,119|318|5
+Estudios Internacionales - Ciencias Políticas (bilingüe) (Getafe)|12,475|330|5
+Estudios Internacionales - Derecho (bilingüe) (Getafe)|13,175|361|5
+Estudios Internacionales - Economía (inglés) (Getafe)|12,830|318|5
+Ingeniería Física - Ingeniería en Tecnologías Industriales (bilingüe) (Leganés)|13,464|354|5,5
+Ingeniería Informática - Administración de Empresas (Colmenarejo)|11,386|384|6
+Ingeniería Informática - Administración de Empresas (Leganés-Getafe)|12,053|384|6
+Periodismo - Comunicación Audiovisual (español o bilingüe) (Getafe)|10,939|300|5
+Periodismo - Humanidades (Getafe)|7,816|372|6
+#J
+Ciencia, Tecnología y Humanidades (UAB, UAM y UC3M) (Getafe)|5,000|240|4
+Ciencias (UAB, UAM y UC3M) (Leganés)|8,661|240|4
+Filosofía, Política y Economía (UAB, UAM, UC3M y UPF) (Getafe)|12,104|240|4`;
+const UAM=`#AH
+Arqueología|5,000|240|4
+Estudios Clásicos y de la Antigüedad|5,000|240|4
+Estudios de Asia y África - Árabe|5,000|240|4
+Estudios de Asia y África - Chino|5,000|240|4
+Estudios de Asia y África - Japonés|5,000|240|4
+Estudios Hispánicos: Lengua Española y sus Literaturas|5,000|240|4
+Estudios Ingleses|5,000|240|4
+Filosofía|5,000|240|4
+Historia|5,000|240|4
+Historia del Arte|5,000|240|4
+Historia y Ciencias de la Música y Tecnología Musical|5,000|240|4
+Lenguas Modernas, Cultura y Comunicación - Español|5,000|240|4
+Lenguas Modernas, Cultura y Comunicación - Francés|5,000|240|4
+Lenguas Modernas, Cultura y Comunicación - Inglés|5,000|240|4
+Traducción e Interpretación (francés)|5,000|240|4
+Traducción e Interpretación (inglés)|6,700|240|4
+#C
+Biología|9,714|240|4
+Bioquímica|12,067|240|4
+Ciencia y Tecnología de los Alimentos|8,528|240|4
+Ciencias Ambientales|7,686|240|4
+Física|12,014|240|4
+Matemáticas|11,937|240|4
+Química|9,986|240|4
+Química (bilingüe)|9,102|240|4
+#S
+Enfermería|11,714|240|4
+Medicina|12,978|360|6
+Nutrición Humana y Dietética|10,003|240|4
+Psicología|10,426|240|4
+#I
+Ciencia e Ingeniería de Datos|11,311|240|4
+Ingeniería Biomédica|12,500|240|4
+Ingeniería Informática|10,715|240|4
+Ingeniería Química|10,528|240|4
+Ingeniería de Tecnologías de Telecomunicación|9,560|240|4
+Programa Académico en Máster en Ing. de Telecomunicación vía Grado en Ing. de Tecnologías de Telecomunicación|10,667|240|4
+Programa Académico en Máster en Ingeniería Informática vía Grado en Ingeniería Informática|11,711|240|4
+#CS
+Administración y Dirección de Empresas|10,203|240|4
+Análisis de Datos en la Empresa / Business Analytics|11,232|240|4
+Antropología Social y Cultural|5,000|240|4
+Ciencia de la Actividad Física y del Deporte|10,560|240|4
+Ciencia Política y Administración Pública|8,886|240|4
+Ciencia Política y Administración Pública - Mención en Gobierno y Dirección Pública|8,971|240|4
+Ciencia Política y Administración Pública - Mención en Relaciones Internacionales y Unión Europea|11,599|240|4
+Derecho|9,837|240|4
+Derecho - Mención en Dcho. de la Energía y del Medio Ambiente|9,214|240|4
+Derecho - Mención en Derecho de los Negocios Internacionales|11,575|240|4
+Derecho - Mención en Derecho Digital y de las Tecnologías|10,958|240|4
+Derecho - Mención en Derechos Humanos y Justicia Social|10,853|240|4
+Economía|9,603|240|4
+Economía (bilingüe)|9,190|240|4
+Economía y Finanzas / Economics and Finance|10,905|240|4
+Estudios Internacionales|10,853|240|4
+Geografía, Geotecnologías y Sostenibilidad Territorial|5,000|240|4
+Gestión Aeronáutica|10,715|240|4
+Maestro en Educación Infantil|8,911|240|4
+Maestro en Educación Primaria|9,939|240|4
+Turismo|5,000|240|4
+#D
+Ciencias Ambientales - Geografía, Geotecnologías y Sostenibilidad Territorial|6,580|354|5
+Derecho - Administración y Dirección de Empresas|10,928|360|6
+Derecho - Ciencia Política y Administración Pública|8,911|300|5
+Estudios Internacionales - Estudios de Asia y África (Árabe)|10,336|348|5
+Filosofía - Historia|12,264|354|5
+Filosofía - Historia y Ciencias de la Música y Tecnología Musical|5,000|354|5
+Historia - Estudios Internacionales|12,964|324|5
+Historia del Arte - Estudios Clásicos y de la Antigüedad|5,000|330|5
+Historia del Arte - Historia|12,513|336|5
+Ingeniería Informática - Matemáticas|13,136|360|5
+Maestro en Educación Infantil - Maestro en Educación Primaria|10,278|348|5
+Nutrición Humana y Dietética - Ciencia y Tecnología de los Alimentos|10,870|342|5
+Traducción e Interpretación (francés) - Lenguas Modernas, Cultura y Comunicación (Francés)|5,790|330|5
+#J
+Ciencia, Tecnología y Humanidades (UAB, UAM y UC3M)|5,000|240|4
+Ciencias (UAB, UAM y UC3M)|7,700|240|4
+Filosofía, Política y Economía (UAB, UAM, UC3M y UPF)|11,820|240|4`;
+const UPM=`#I
+Arquitecto/a (PARS)|13,089|300|5
+Arquitectura Naval / Ingeniería Marítima|10,467|240|4
+Biotecnología|12,728|240|4
+Ciencia de Datos e Inteligencia Artificial (Campus de Montegancedo)|11,899|240|4
+Ciencia de Datos e Inteligencia Artificial (Campus Sur)|12,139|240|4
+Edificación|7,637|240|4
+Fundamentos de la Arquitectura|11,091|300|5
+Gestión y Operaciones del Transporte Aéreo|11,478|240|4
+Ingeniería Aeroespacial|12,484|240|4
+Ingeniero/a Aeronáutico/a (PARS)|13,411|240|4
+Ingeniería Agrícola|8,173|240|4
+Ingeniero/a Agrónomo/a (PARS)|10,814|240|4
+Ingeniería Agroambiental|5,750|240|4
+Ingeniería Alimentaria|7,015|240|4
+Ingeniería Biomédica|12,553|240|4
+Ingeniero/a Biomédico/a (PARS)|13,150|240|4
+Ingeniería Civil y Territorial (Moncloa)|10,053|240|4
+Ingeniería Civil y Territorial (Retiro)|9,675|240|4
+Ingeniero/a de Caminos, Canales y Puertos (PARS)|11,961|240|4
+Ingeniería de Computadores|9,311|240|4
+Ingeniería de la Energía|11,039|240|4
+Ingeniería de Materiales|9,561|240|4
+Ingeniero/a de Materiales (PARS)|10,728|240|4
+Ingeniero/a de Minas (PARS)|10,388|240|4
+Ingeniero/a de Montes (PARS)|8,739|240|4
+Ingeniería de Organización|12,636|240|4
+Ingeniería en Sistemas de Telecomunicación|9,186|240|4
+Ingeniería en Sonido e Imagen|8,066|240|4
+Ingeniería de las Tecnologías de la Información Geoespacial|7,310|240|4
+Ingeniería de Tecnologías y Servicios de Telecomunicación|9,408|240|4
+Ingeniero/a de Telecomunicación (PARS)|11,686|240|4
+Ingeniería del Medio Natural|5,744|240|4
+Ingeniería del Software|10,036|240|4
+Ingeniero/a del Software (PARS)|11,533|240|4
+Ingeniería Eléctrica|10,450|240|4
+Ingeniería Electrónica de Comunicaciones|8,361|240|4
+Ingeniería Electrónica Industrial y Automática|10,670|240|4
+Ingeniería en Diseño Industrial y Desarrollo de Producto|12,461|240|4
+Ingeniero/a en Sistemas Informáticos Distribuidos y Embebidos (PARS)|8,728|240|4
+Ingeniería en Tecnología Minera|8,390|240|4
+Ingeniería Geológica|8,390|240|4
+Ingeniería en Mineralúrgia y Metalúrgica de las Materias Primas|8,390|240|4
+Ingeniería en Recursos Energéticos, Combustibles y Explosivos|8,390|240|4
+Ingeniería en Tecnologías Aeroespaciales|12,363|240|4
+Ingeniería en Tecnologías Ambientales|6,464|240|4
+Ingeniería en Tecnologías Industriales|12,114|240|4
+Ingeniería Forestal|5,404|240|4
+Ingeniería Geomática|6,686|240|4
+Ingeniero/a Industrial (PARS)|13,525|240|4
+Ingeniería Informática|10,175|240|4
+Ingeniero/a Informática (PARS)|11,425|240|4
+Ingeniería Mecánica|11,867|240|4
+Ingeniero/a Naval y Oceánica (PARS)|11,978|240|4
+Ingeniería Química (Castellana)|11,707|240|4
+Ingeniería Química (Embajadores)|10,883|240|4
+Ingeniería Telemática|8,540|240|4
+Ingeniería y Sistemas de Datos (Campus Moncloa)|11,128|240|4
+Matemáticas e Informática|11,507|240|4
+Sistemas de Información|9,080|240|4
+Tecnologías para la Sociedad de la Información|8,190|240|4
+#C
+Ciencias Agrarias y Bioeconomía|6,851|240|4
+Matemáticas|12,085|240|4
+#CS
+Ciencias de la Actividad Física y del Deporte (INEF)|8,925|240|4
+#D
+Edificación - Administración y Dirección de Empresas|8,115|399|6
+Ingeniería Civil y Territorial - Administración y Dirección de Empresas|10,741|363|5
+Ingeniería en Diseño Industrial y Desarrollo del Producto - Ingeniería Mecánica|12,878|313,5|5
+Ingeniería Eléctrica - Ingeniería Electrónica Industrial y Automática|11,361|304,5|5
+Ingeniería Electrónica de Comunicaciones - Ingeniería Telemática|8,214|300|5
+Ingeniería Geomática - Ingeniería de las Tecnologías de la Información Geoespacial (Campus Sur)|7,177|315|5
+Ingeniería Informática - Administración y Dirección de Empresas|11,589|360|5
+Ingeniería y Sistemas de Datos - Ingeniería Telemática (Campus Sur)|8,828|357|5
+#J
+Interuniversitario en Diseño de Moda (UPM) y Comercio (UCM) Campus Sur/ Madrid|5,000|344|5`;
+const UCM=`#AH
+Arqueología|5,000|240|4
+Bellas Artes|9,936|240|4
+Ciencias de las Religiones|5,000|240|4
+Conservación y Restauración del Patrimonio Cultural|9,600|240|4
+Diseño|11,650|240|4
+Español: Lengua y Literatura|5,000|240|4
+Estudios Ingleses|5,000|240|4
+Estudios Semíticos e Islámicos|5,000|240|4
+Estudios Teatrales|5,378|240|4
+Filología Clásica|5,000|240|4
+Filosofía|5,940|240|4
+Filosofía, Política y Economía|8,384|240|4
+Historia|5,000|240|4
+Historia del Arte|5,000|240|4
+Lenguas Modernas y sus Literaturas|5,000|240|4
+Lingüística y Lenguas Aplicadas|5,000|240|4
+Literatura General y Comparada|5,000|240|4
+Musicología|5,000|240|4
+Traducción e Interpretación|5,000|240|4
+#C
+Biología|9,936|240|4
+Bioquímica|12,262|240|4
+Ciencia y Tecnología de los Alimentos|8,560|240|4
+Física|11,811|240|4
+Geología|5,000|240|4
+Matemáticas|12,250|240|4
+Matemáticas y Ciencia de Datos|11,964|240|4
+Química|10,111|240|4
+#S
+Enfermería|11,603|240|4
+Farmacia|11,641|300|5
+Fisioterapia|11,463|240|4
+Logopedia|9,200|240|4
+Medicina|13,100|360|6
+Nutrición Humana y Dietética|10,100|240|4
+Odontología|12,652|300|5
+Óptica y Optometría|7,863|240|4
+Podología|9,453|240|4
+Psicología|10,525|240|4
+Terapia Ocupacional|9,089|240|4
+Veterinaria|11,814|300|5
+#I
+Desarrollo de Videojuegos|9,689|240|4
+Ingeniería de Computadores|9,480|240|4
+Ingeniería de Datos e Inteligencia Artificial|12,775|240|4
+Ingeniería Electrónica de Comunicaciones|8,653|240|4
+Ingeniería de Materiales|9,203|240|4
+Ingeniería del Software|10,150|240|4
+Ingeniería Geológica|5,361|240|4
+Ingeniería Informática|10,761|240|4
+Ingeniería Matemática|12,625|240|4
+Ingeniería Química|11,033|240|4
+#CS
+Administración y Dirección de Empresas|9,564|240|4
+Administración y Dirección de Empresas (inglés)|10,714|240|4
+Antropología Social y Cultural|5,000|240|4
+Ciencia de los Datos Aplicada|10,937|240|4
+Ciencias Políticas|5,778|240|4
+Comercio|8,150|240|4
+Comunicación Audiovisual|9,544|240|4
+Criminología|11,233|240|4
+Derecho|8,439|240|4
+Economía|8,800|240|4
+Economía (inglés)|9,545|240|4
+Educación Social|8,500|240|4
+Estadística Aplicada|8,878|240|4
+Finanzas, Banca y Seguros|9,420|240|4
+Geografía y Ordenación del Territorio|5,000|240|4
+Gestión y Administración Pública|5,228|240|4
+Información y Documentación|5,000|240|4
+Maestro de Educación Infantil|9,050|240|4
+Maestro de Educación Primaria|10,262|240|4
+Pedagogía|8,600|240|4
+Periodismo|6,575|240|4
+Publicidad y Relaciones Públicas|10,364|240|4
+Relaciones Internacionales|11,185|240|4
+Relaciones Laborales y Recursos Humanos|7,350|240|4
+Sociología|5,000|240|4
+Trabajo Social|7,140|240|4
+Turismo|5,000|240|4
+#D
+Administración y Dirección de Empresas - Ingeniería Informática|11,316|381|5
+Ciencias Políticas - Filosofía|5,089|366|5
+Derecho - Administración y Dirección de Empresas|10,177|360|6
+Derecho - Ciencias Políticas|10,150|360|6
+Derecho- Estudios Jurídico Militares|8,875|345|5
+Derecho - Filosofía|8,428|390|6
+Derecho - Relaciones Laborales y Recursos Humanos|8,114|360|6
+Economía - Matemáticas y Ciencia de Datos|12,716|378|6
+Economía - Relaciones Internacionales|12,315|360|5
+Farmacia - Nutrición Humana y Dietética|12,328|417|6
+Gestión y Administración Pública - Economía|8,375|360|5
+Historia - Filología Clásica|8,810|360|6
+Ingeniería Informática- Matemáticas|13,465|360|5
+Maestro Educación Infantil - Maestro Educación Primaria|11,199|360|5
+Maestro Educación Infantil - Pedagogía|10,275|360|5
+Maestro Educación Primaria - Pedagogía|11,462|360|5
+Matemáticas - Física|13,698|360|5
+Psicología - Logopedia|10,525|360|5
+Química - Bioquímica|12,617|354|5
+Sociología - Relaciones Internacionales|10,514|360|5
+Turismo - Comercio|7,211|345|5
+#J
+Bachelor of Arts in European Studies|5,000|180|3
+Titulación Internacional en ADE (UCM - HWR Berlín)|11,948|243|4
+Título Internacional Derecho (UCM - Sorbona)|11,449|240|4
+Título Internacional Economía (UCM - Sorbona)|12,062|240|4`;
+const URJ=`#AH
+Artes Visuales y Danza (Fuenlabrada)|5,000|240|4
+Bellas Artes (Aranjuez)|8,564|240|4
+Diseño Integral y Gestión de la Imagen (Aranjuez)|9,846|240|4
+Diseño Integral y Gestión de la Imagen (Madrid)|11,500|240|4
+Diseño y Gestión de Moda (Aranjuez)|10,018|240|4
+Filosofía (Fuenlabrada)|5,000|240|4
+Historia (Fuenlabrada)|6,100|240|4
+Historia de Arte y Patrimonio Cultural (Aranjuez)|5,000|240|4
+Lengua y Literatura Española (Fuenlabrada)|5,000|240|4
+Traducción e Interpretación (Aranjuez)|5,000|240|4
+Traducción e Interpretación (Fuenlabrada)|5,000|240|4
+#C
+Biología (Móstoles)|9,950|240|4
+Ciencia y Tecnología de los Alimentos (Móstoles)|8,149|240|4
+Ciencia y Tecnología del Agua (Móstoles)|5,000|240|4
+Ciencias Ambientales (Móstoles)|7,553|240|4
+Ciencias Experimentales (Móstoles)|7,661|240|4
+Matemáticas (Móstoles)|11,753|240|4
+Nanociencia y Nanotecnología (Móstoles)|10,214|240|4
+#S
+Enfermería (Alcorcón)|11,675|240|4
+Farmacia (Alcorcón)|11,778|300|5
+Fisioterapia (Alcorcón)|10,954|240|4
+Medicina (Alcorcón)|12,932|360|6
+Odontología (Alcorcón)|12,590|300|5
+Psicología (Alcorcón)|10,989|240|4
+Terapia Ocupacional (Alcorcón)|9,128|240|4
+#I
+Ciencia e Ingeniería de Datos (Fuenlabrada)|10,403|240|4
+Diseño y Desarrollo de Videojuegos (Madrid)|9,489|240|4
+Diseño y Desarrollo de Videojuegos (Móstoles)|9,404|240|4
+Fundamentos de la Arquitectura (Fuenlabrada)|10,428|300|5
+Ingeniería Aeroespacial (Fuenlabrada)|12,114|240|4
+Ingeniería Ambiental (Móstoles)|7,848|240|4
+Ingeniería Biomédica (Fuenlabrada)|12,339|240|4
+Ingeniería Biomédica (inglés) (Fuenlabrada)|12,139|240|4
+Ingeniería de Computadores (Móstoles)|9,186|240|4
+Ingeniería de la Ciberseguridad (Móstoles)|10,803|240|4
+Ingeniería Electrónica Industrial y Automática (Móstoles)|10,075|240|4
+Ingeniería de la Energía (Móstoles)|10,040|240|4
+Ingeniería en Materiales (Móstoles)|9,525|240|4
+Ingeniería de Robótica Software (Fuenlabrada)|9,814|240|4
+Ingeniería de Tecnologías Industriales (Móstoles)|10,952|240|4
+Ingeniería del Software (Móstoles)|9,986|240|4
+Ingeniería en Organización Industrial (Móstoles)|11,257|240|4
+Ingeniería en Organización Industrial (Vicálvaro)|10,950|240|4
+Ingeniería en Tecnologías de la Telecomunicación (Fuenlabrada)|8,150|240|4
+Ingeniería Informática (Móstoles)|10,503|240|4
+Ingeniería Informática (Vicálvaro)|10,036|240|4
+Ingeniería Mecánica (Móstoles)|11,378|240|4
+Ingeniería Química (Móstoles)|10,481|240|4
+Inteligencia Artificial (Móstoles)|10,428|240|4
+Paisajismo (Fuenlabrada)|6,930|240|4
+#CS
+Administración y Dirección de Empresas (Fuenlabrada)|8,714|240|4
+Administración y Dirección de Empresas (inglés) (Vicálvaro)|8,925|240|4
+Administración y Dirección de Empresas (Móstoles)|8,838|240|4
+Administración y Dirección de Empresas (Vicálvaro)|8,450|240|4
+Administración y Dirección de Empresas (a distancia) (Vicálvaro)|8,140|240|4
+Ciencia Política y Gestión Pública (Fuenlabrada)|7,441|240|4
+Ciencia Política y Gestión Pública (Vicálvaro)|7,427|240|4
+Ciencia, Gestión e Ingeniería de Servicios (Madrid)|8,080|240|4
+Ciencia, Gestión e Ingeniería de Servicios (semipresencial) (Vicálvaro)|7,200|240|4
+Ciencias de la Actividad Física y del Deporte (Fuenlabrada)|10,625|240|4
+Comunicación Audiovisual (Fuenlabrada)|8,560|240|4
+Comunicación Audiovisual (Vicálvaro)|9,115|240|4
+Comunicación Digital (Fuenlabrada)|9,138|240|4
+Contabilidad y Finanzas (Fuenlabrada)|8,300|240|4
+Contabilidad y Finanzas (Móstoles)|8,288|240|4
+Contabilidad y Finanzas (a distancia) (Vicálvaro)|7,920|240|4
+Contabilidad y Finanzas (Vicálvaro)|9,039|240|4
+Criminología (Alcorcón)|10,087|240|4
+Criminología (Vicálvaro)|10,461|240|4
+Derecho (Fuenlabrada)|9,166|240|4
+Derecho (Móstoles)|8,889|240|4
+Derecho (Vicálvaro)|8,723|240|4
+Derecho (semipresencial) (Vicálvaro)|8,111|240|4
+Dirección y Gestión de Empresas en el Ámbito Digital (Vicálvaro)|9,903|240|4
+Economía (Fuenlabrada)|9,078|240|4
+Economía (inglés) (Madrid)|6,989|240|4
+Economía (Móstoles)|8,365|240|4
+Economía (Vicálvaro)|8,475|240|4
+Economía Financiera y Actuarial (Móstoles)|8,805|240|4
+Economía Financiera y Actuarial (Vicálvaro)|9,564|240|4
+Educación Infantil (Fuenlabrada)|9,140|240|4
+Educación Infantil (inglés) (Vicálvaro)|5,000|240|4
+Educación Infantil (Móstoles)|8,910|240|4
+Educación Infantil (semipresencial) (Vicálvaro)|8,670|240|4
+Educación Primaria y Educación Primaria mención Educación Física (Fuenlabrada)|9,564|240|4
+Educación Primaria y Educación Primaria mención Educación Musical, Educación Física, Ciencias y Matemáticas (Móstoles)|9,750|240|4
+Educación Primaria y Educación Primaria mención Lengua Extranjera inglés (Vicálvaro)|8,524|240|4
+Educación Primaria (semipresencial) (Vicálvaro)|9,014|240|4
+Gastronomía (Aranjuez)|5,000|240|4
+Inteligencia, Seguridad y Diplomacia (Madrid-Quintana)|7,303|240|4
+Lengua de Signos Española y Comunidad Sorda (Alcorcón)|5,000|240|4
+Lengua de Signos Española y Comunidad Sorda (Madrid - Quintana)|5,000|240|4
+Marketing (Aranjuez)|8,330|240|4
+Marketing (Fuenlabrada)|10,199|240|4
+Marketing (Móstoles)|9,728|240|4
+Marketing (inglés) (Vicálvaro)|9,458|240|4
+Marketing (Vicálvaro)|10,624|240|4
+Periodismo (Fuenlabrada)|7,930|240|4
+Periodismo (semipresencial) (Fuenlabrada)|7,000|240|4
+Periodismo (Vicálvaro)|7,352|240|4
+Protocolo, Organización de Eventos y Comunicación Corporativa (inglés) (Madrid)|7,770|240|4
+Protocolo, Organización de Eventos y Comunicación Corporativa (Vicálvaro)|9,625|240|4
+Publicidad y Relaciones Públicas (Fuenlabrada)|10,311|240|4
+Publicidad y Relaciones Públicas (semipresencial) (Fuenlabrada)|8,889|240|4
+Publicidad y Relaciones Públicas (Vicálvaro)|10,064|240|4
+Relaciones Internacionales (Aranjuez)|10,116|240|4
+Relaciones Internacionales (Fuenlabrada)|10,992|240|4
+Relaciones Internacionales (inglés) (Vicálvaro)|10,632|240|4
+Relaciones Laborales y Recursos Humanos (Alcorcón)|7,540|240|4
+Relaciones Laborales y Recursos Humanos (Vicálvaro)|7,328|240|4
+Trabajo Social (Alcorcón)|8,710|240|4
+Turismo (Fuenlabrada)|5,000|240|4
+Turismo (inglés) (Vicálvaro)|5,000|240|4
+Turismo (semipresencial) (Vicálvaro)|5,000|240|4
+Turismo (Vicálvaro)|5,000|240|4
+#D
+Administración y Dirección de Empresas (presencial) - Ciencia, Gestión e Ingeniería de Servicios (semipresencial) (Vicálvaro)|10,239|348|5
+Administración y Dirección de Empresas (a distancia) (Vicálvaro) - Ciencia, Gestión e Ingeniería de Servicios (presencial) (Madrid)|8,200|348|5
+Administración y Dirección de Empresas - Derecho (Fuenlabrada)|7,636|348|5
+Administración y Dirección de Empresas - Derecho (Madrid)|8,536|348|5
+Administración y Dirección de Empresas - Derecho (Móstoles)|8,461|348|5
+Administración y Dirección de Empresas - Derecho (Vicálvaro)|9,289|348|5
+Administración y Dirección de Empresas - Marketing (Vicálvaro)|12,014|304,5|5
+Bellas Artes - Diseño Integral y Gestión de la Imagen (Aranjuez)|11,685|345|5
+Bellas Artes (presencial) (Aranjuez) - Turismo (semipresencial) (Vicálvaro)|8,461|393|6
+Ciencia Política y Gestión Pública - Derecho (Fuenlabrada)|8,903|315|5
+Ciencia Política y Gestión Pública - Derecho (Vicálvaro)|9,937|315|5
+Ciencia Política y Gestión Pública - Economía (Fuenlabrada)|8,189|318|5
+Ciencia Política y Gestión Pública - Economía (Vicálvaro)|10,025|318|5
+Ciencia Política y Gestión Pública - Periodismo (Fuenlabrada)|8,775|336|5
+Ciencia Política y Gestión Pública - Periodismo (Vicálvaro)|10,164|336|5
+Ciencia, Gestión e Ingeniería de Servicios (semipresencial) - Marketing (presencial) (Vicálvaro)|10,161|328,5|5
+Ciencia, Gestión e Ingeniería de Servicios (semipresencial) - Turismo (presencial) (Vicálvaro)|6,431|339|5
+Comunicación Audiovisual - Administración y Dirección de Empresas (Fuenlabrada)|8,339|339|5
+Contabilidad y Finanzas - Relaciones Laborales y Recursos Humanos (Vicálvaro)|9,389|336|5
+Criminología - Derecho (Vicálvaro)|12,433|327|5
+Criminología - Ingeniería Informática (Vicálvaro)|10,867|381|5
+Criminología - Psicología (Alcorcón)|12,314|360|5
+Criminología - Trabajo Social (Alcorcón)|10,500|348|5
+Derecho - Periodismo (Vicálvaro)|11,378|354|5
+Derecho (semipresencial) - Relaciones Internacionales (inglés) (presencial) (Vicálvaro)|12,330|362|5
+Derecho - Relaciones Internacionales (Fuenlabrada)|13,161|362|5
+Derecho - Relaciones Internacionales (inglés) (Vicálvaro)|13,061|362|5
+Derecho - Relaciones Laborales y Recursos Humanos (Vicálvaro)|9,025|303|5
+Diseño y Desarrollo de Videojuegos - Ingeniería de Computadores (Móstoles)|11,102|303|5
+Diseño y Gestión de Moda - Bellas Artes (Aranjuez)|11,503|345|5
+Diseño y Gestión de Moda - Diseño Integral y Gestión de la Imagen (Aranjuez)|10,690|342|5
+Economía - Derecho (Fuenlabrada)|10,475|339|5
+Economía - Derecho (Móstoles)|11,078|339|5
+Economía - Derecho (Vicálvaro)|11,728|339|5
+Economía - Historia (Fuenlabrada)|6,689|355,5|5
+Economía - Matemáticas (Móstoles)|12,489|366|5
+Economía - Periodismo (Vicálvaro)|10,403|334,5|5
+Economía Financiera y Actuarial - Administración y Dirección de Empresas (Móstoles)|11,153|288|5
+Economía Financiera y Actuarial - Administración y Dirección de Empresas (Vicálvaro)|11,287|288|5
+Economía Financiera y Actuarial - Economía (Móstoles)|10,036|288|5
+Economía Financiera y Actuarial - Economía (Vicálvaro)|10,378|288|5
+Educación Infantil - Educación Primaria (Fuenlabrada)|11,961|316,5|5
+Filosofía - Ciencia Política y Gestión Pública (Fuenlabrada)|5,000|384|6
+Filosofía - Economía (Fuenlabrada)|5,000|378|6
+Fundamentos de la Arquitectura - Paisajismo (Fuenlabrada)|10,185|414|6
+Historia - Turismo (Fuenlabrada)|5,000|366|5
+Historia (presencial) (Fuenlabrada) - Turismo (semipresencial) (Vicálvaro)|5,000|366|5
+Ingeniería Ambiental - Ingeniería en Organización Industrial (Móstoles)|9,903|318|5
+Ingeniería de la Energía - Ingeniería Ambiental (Móstoles)|10,373|303|5
+Ingeniería de la Energía - Ingeniería en Organización Industrial (Móstoles)|10,814|312|5
+Ingeniería de Materiales - Ingeniería de la Energía (Móstoles)|9,914|313,5|5
+Ingeniería de Materiales - Ingeniería en Organización Industrial (Móstoles)|10,478|309|5
+Ingeniería del Software - Matemáticas (Móstoles)|12,604|309|5
+Ingeniería en Tecnología de Telecomunicación (mención Sistema de Telecomunicación) - Ingeniería Aeroespacial (mención en Aeronavegación) (Fuenlabrada)|12,089|360|6
+Ingeniería Informática (presencial) - Administración y Dirección de Empresas (a distancia) (Vicálvaro)|10,589|360|5
+Ingeniería Informática - Administración y Dirección de Empresas (Móstoles)|11,678|360|5
+Ingeniería Informática - Ingeniería de Computadores (Móstoles)|9,849|270|4
+Ingeniería Informática - Ingeniería del Software (Móstoles)|11,323|270|4
+Ingeniería Informática - Matemáticas (Móstoles)|13,089|324|4
+Ingeniería Química - Ingeniería en Organización Industrial (Móstoles)|11,103|312|5
+Ingeniería Química - Ingeniería Ambiental (Móstoles)|10,439|300|5
+Ingeniería Química - Ingeniería de la Energía (Móstoles)|10,825|303|5
+Periodismo - Comunicación Audiovisual (Fuenlabrada)|8,936|294|5
+Periodismo - Comunicación Audiovisual (Vicálvaro)|8,553|294|5
+Publicidad y Relaciones Públicas - Administración y Dirección de Empresas (Fuenlabrada)|10,046|322,5|5
+Publicidad y Relaciones Públicas - Marketing (Fuenlabrada)|12,329|330|5
+Relaciones Internacionales - Ciencias Políticas y Gestión Pública (Fuenlabrada)|12,267|330|5
+Relaciones Internacionales - Economía (Fuenlabrada)|11,492|359|5
+Relaciones Internacionales - Periodismo (Fuenlabrada)|12,216|330|5
+Relaciones Internacionales (inglés) - Protocolo, Organización de Eventos y Comunicación Corporativa (Vicálvaro)|12,369|357|5
+Relaciones Laborales y Recursos Humanos - Trabajo Social (Alcorcón)|8,760|360|5
+Turismo - Administración y Dirección de Empresas (Fuenlabrada)|5,000|310,5|5
+Turismo - Administración y Dirección de Empresas (Vicálvaro)|7,653|310,5|5
+Turismo - Marketing (Vicálvaro)|10,177|310,5|5
+Turismo (semipresencial) - Marketing (presencial) (Vicálvaro)|9,289|310,5|5`;
+const D=[].concat(P("Politécnica de Madrid",UPM),P("Complutense de Madrid",UCM),P("Autónoma de Madrid",UAM),P("Alcalá",UAH),P("Carlos III de Madrid",UC3),P("Rey Juan Carlos",URJ));
+
+const $=id=>document.getElementById(id);
+[...new Set(D.map(d=>d[1]))].sort((a,b)=>a.localeCompare(b,"es")).forEach(u=>$("uni").add(new Option("Universidad "+(u==="Alcalá"?"de ":"")+u,u)));
+const ramas=[...new Set(D.map(d=>d[3]))];
+let rama="";
+function chip(t,v){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",v===rama);b.onclick=()=>{rama=v;[...$("chips").children].forEach(x=>x.setAttribute("aria-pressed",x===b));render()};$("chips").append(b)}
+chip("Todas las ramas","");ramas.forEach(r=>chip(r,r));
+const fmt=n=>n.toFixed(3).replace(".",",");
+const nz=t=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function render(){
+  const q=$("q").value.trim().toLowerCase(),c=$("ccaa").value,uu=$("uni").value,m=+$("min").value,s=$("sort").value;
+  $("minv").textContent=fmt(m);
+  let r0=D.filter(d=>(!q||nz(d[0]).includes(nz(q)))&&(!c||d[2]===c)&&(!uu||d[1]===uu)&&(!rama||d[3]===rama)&&d[4]>=m);
+  const hid=r0.filter(d=>d[4]===5).length;let r=$("sn").checked?r0:r0.filter(d=>d[4]!==5);
+  r.sort((a,b)=>s==="az"?a[0].localeCompare(b[0]):s==="asc"?a[4]-b[4]:b[4]-a[4]);
+  $("n").textContent=r.length+(r.length===1?" carrera":" carreras")+(!$("sn").checked&&hid?" · "+hid+" sin nota de corte ocultas":"");
+  $("list").innerHTML=r.length?r.map(d=>`<li class="row"><div><h3>${d[0]}</h3><div class="meta">${d[1]} · ${d[2]}${d[5]?" · "+d[5]:""}</div><div class="meta">${d[7]} cursos · ${d[6]} créditos</div><div class="acts"><button class="chip" type="button" data-a="f" data-i="${D.indexOf(d)}">Ver ficha</button></div></div>${d[4]===5?`<div class="nota sn">Sin nota de corte</div>`:`<div class="nota">${fmt(d[4])}<span>nota de corte</span></div><div class="bar" aria-hidden="true"><i style="width:${d[4]/14*100}%"></i></div>`}</li>`).join(""):`<li class="empty">${c&&!D.some(d=>d[2]===c)?"Aún no hay datos de esta comunidad. Los estamos añadiendo.":"No hay carreras con estos filtros. Baja la nota mínima o borra los filtros."}</li>`;
+}
+["q","ccaa","uni","sn","min","sort"].forEach(i=>$(i).addEventListener("input",render));
+$("go").onclick=render;
+$("reset").onclick=()=>{$("q").value="";$("uni").value="";$("sn").checked=false;$("min").value=5;$("sort").value="desc";rama="";[...$("chips").children].forEach((x,i)=>x.setAttribute("aria-pressed",i===0));render()};
+$("theme").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0a2e2e";r.dataset.theme=d?"light":"dark";$("theme").textContent=d?"Modo oscuro":"Modo claro"};
+const hist=d=>[d[4]];
+$("list").addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;
+  const d=D[+b.dataset.i],h=hist(d);
+  $("dt").textContent=d[0];$("dm").textContent=d[1]+" · "+d[2]+(d[5]?" · "+d[5]:"");
+  $("dp").textContent=d[3]+" · "+d[7]+" cursos · "+d[6]+" créditos";
+  $("dh").innerHTML=d[4]===5?`<text x="200" y="85" text-anchor="middle" font-weight="800" font-size="18">Sin nota de corte (curso 25/26)</text>`:h.map((v,i)=>{const H=v/14*120,x=170+i*92;return `<rect x="${x}" y="${140-H}" width="60" height="${H}" rx="4" fill="${i==0?"#e39a3b":"#0b7373"}"/><text x="${x+30}" y="${132-H}" text-anchor="middle" font-weight="800">${fmt(v)}</text><text x="${x+30}" y="160" text-anchor="middle">25/26</text>`}).join("");
+  $("dlg").showModal();
+});
+$("dc").onclick=()=>$("dlg").close();
+$("dlg").addEventListener("click",e=>{if(e.target===$("dlg"))$("dlg").close()});
+render();
+</script>
+</body>
+</html>
