@@ -102,8 +102,8 @@ dialog h3{font-family:"Alfa Slab One",serif;font-weight:400;font-size:26px;margi
     <label>Universidad
       <select id="uni"><option value="">Todas</option></select>
     </label>
-    <label>Nota mínima: <output id="minv">5,0</output>
-      <input id="min" type="range" min="5" max="14" step="0.5" value="5">
+    <label>Nota máxima: <output id="minv">14,000</output>
+      <input id="min" type="range" min="5" max="14" step="0.5" value="14">
     </label>
     <label>Ordenar por
       <select id="sort"><option value="desc">Nota más alta</option><option value="asc">Nota más baja</option><option value="az">Nombre (A–Z)</option></select>
@@ -741,15 +741,15 @@ const nz=t=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 function render(){
   const q=$("q").value.trim().toLowerCase(),c=$("ccaa").value,uu=$("uni").value,m=+$("min").value,s=$("sort").value;
   $("minv").textContent=fmt(m);
-  let r0=D.filter(d=>(!q||nz(d[0]).includes(nz(q)))&&(!c||d[2]===c)&&(!uu||d[1]===uu)&&(!rama||d[3]===rama)&&d[4]>=m);
+  let r0=D.filter(d=>(!q||nz(d[0]).includes(nz(q)))&&(!c||d[2]===c)&&(!uu||d[1]===uu)&&(!rama||d[3]===rama)&&d[4]<=m);
   const hid=r0.filter(d=>d[4]===5).length;let r=$("sn").checked?r0:r0.filter(d=>d[4]!==5);
   r.sort((a,b)=>s==="az"?a[0].localeCompare(b[0]):s==="asc"?a[4]-b[4]:b[4]-a[4]);
   $("n").textContent=r.length+(r.length===1?" carrera":" carreras")+(!$("sn").checked&&hid?" · "+hid+" sin nota de corte ocultas":"");
-  $("list").innerHTML=r.length?r.map(d=>`<li class="row"><div><h3>${d[0]}</h3><div class="meta">${d[1]} · ${d[2]}${d[5]?" · "+d[5]:""}</div><div class="meta">${d[7]} cursos · ${d[6]} créditos</div><div class="acts"><button class="chip" type="button" data-a="f" data-i="${D.indexOf(d)}">Ver ficha</button></div></div>${d[4]===5?`<div class="nota sn">Sin nota de corte</div>`:`<div class="nota">${fmt(d[4])}<span>nota de corte</span></div><div class="bar" aria-hidden="true"><i style="width:${d[4]/14*100}%"></i></div>`}</li>`).join(""):`<li class="empty">${c&&!D.some(d=>d[2]===c)?"Aún no hay datos de esta comunidad. Los estamos añadiendo.":"No hay carreras con estos filtros. Baja la nota mínima o borra los filtros."}</li>`;
+  $("list").innerHTML=r.length?r.map(d=>`<li class="row"><div><h3>${d[0]}</h3><div class="meta">${d[1]} · ${d[2]}${d[5]?" · "+d[5]:""}</div><div class="meta">${d[7]} cursos · ${d[6]} créditos</div><div class="acts"><button class="chip" type="button" data-a="f" data-i="${D.indexOf(d)}">Ver ficha</button></div></div>${d[4]===5?`<div class="nota sn">Sin nota de corte</div>`:`<div class="nota">${fmt(d[4])}<span>nota de corte</span></div><div class="bar" aria-hidden="true"><i style="width:${d[4]/14*100}%"></i></div>`}</li>`).join(""):`<li class="empty">${c&&!D.some(d=>d[2]===c)?"Aún no hay datos de esta comunidad. Los estamos añadiendo.":"No hay carreras con estos filtros. Sube la nota máxima o borra los filtros."}</li>`;
 }
 ["q","ccaa","uni","sn","min","sort"].forEach(i=>$(i).addEventListener("input",render));
 $("go").onclick=render;
-$("reset").onclick=()=>{$("q").value="";$("uni").value="";$("sn").checked=false;$("min").value=5;$("sort").value="desc";rama="";[...$("chips").children].forEach((x,i)=>x.setAttribute("aria-pressed",i===0));render()};
+$("reset").onclick=()=>{$("q").value="";$("uni").value="";$("sn").checked=false;$("min").value=14;$("sort").value="desc";rama="";[...$("chips").children].forEach((x,i)=>x.setAttribute("aria-pressed",i===0));render()};
 $("theme").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0a2e2e";r.dataset.theme=d?"light":"dark";$("theme").textContent=d?"Modo oscuro":"Modo claro"};
 const hist=d=>[d[4]];
 $("list").addEventListener("click",e=>{
